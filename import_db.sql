@@ -1,3 +1,10 @@
+DROP TABLE IF EXISTS question_likes;
+DROP TABLE IF EXISTS replies;
+DROP TABLE IF EXISTS question_follows;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS user;
+
+
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE user (
@@ -26,12 +33,13 @@ CREATE TABLE question_follows (
 
 CREATE TABLE replies (
     id INTEGER PRIMARY KEY,
+    parent_reply_id INTEGER,
     question_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     body TEXT NOT NULL,
 
     FOREIGN KEY (question_id) REFERENCES questions(id),
-    FOREIGN KEY (id) REFERENCES replies(id),
+    FOREIGN KEY (parent_reply_id) REFERENCES replies(id),
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
@@ -53,15 +61,15 @@ VALUES
 INSERT INTO 
     questions(title, body, author_id)
 VALUES
-    ('how sql work', 'I''m so confused. Send help!!!', 1);
+    ('how sql work', 'I''m so confused. Send help!!!', (SELECT id FROM user WHERE fname = 'Deep'));
 
 INSERT INTO
     question_follows(user_id, question_id)
 VALUES
-    (1, 1);
+    ((SELECT id FROM user WHERE fname = 'Deep'), (SELECT id FROM questions WHERE id = question_id));
 
 INSERT INTO
     replies(question_id, user_id, body)
 VALUES
-    (1, 2, "Same! So lost lol :(");
+    ((SELECT id FROM questions WHERE id = question_id), (SELECT id FROM user WHERE fname = 'Kira'), "Same! So lost lol :(");
 
