@@ -17,24 +17,25 @@ class UserModel
     attr_accessor :fname, :lname, :id
     
     def self.find_by_id(userid)
-        user = QuestionsDBConnection.instance.execute(<<-SQL, userid)
+        users = QuestionsDBConnection.instance.execute(<<-SQL, userid)
             SELECT * FROM user
             WHERE id = ?
         SQL
-        return nil unless user.length > 0
+        return nil unless users.length > 0
 
-        UserModel.new(user)
+        users.map {|user| UserModel.new(user)}
     end
 
     def self.find_by_name(fname, lname)
-        user = QuestionsDBConnection.instance.execute(<<-SQL, fname, lname)
+        users = QuestionsDBConnection.instance.execute(<<-SQL, fname, lname)
             SELECT * FROM user
             WHERE fname = ? 
             AND lname = ?
         SQL
-        return nil unless user.length > 0
+        return nil unless users.length > 0
 
-        UserModel.new(user)
+        
+        users.map {|user| UserModel.new(user)}
     end
 
     def self.all
@@ -47,9 +48,9 @@ class UserModel
     end
 
     def initialize(options)
-        @id = options["id"]
-        @fname = options["fname"]
-        @lname = options["lname"]
+        @id = options['id']
+        @fname = options['fname']
+        @lname = options['lname']
     end
 
     def authored_questions(user_id)
@@ -84,13 +85,13 @@ class QuestionModel
     end
 
     def self.find_by_id(questionid)
-        question = QuestionsDBConnection.instance.execute(<<-SQL, questionid)
+        questions = QuestionsDBConnection.instance.execute(<<-SQL, questionid)
             SELECT * FROM questions
             WHERE id = ?
         SQL
-        return nil unless question.length > 0
+        return nil unless questions.length > 0
 
-        QuestionModel.new(question)
+        questions.map{|question| QuestionModel.new(question)}
     end
 
     def initialize(options)
@@ -119,7 +120,10 @@ class QuestionModel
         SQL
 
         return nil if authors.length < 0
-        UserModel.new(authors.first)
+
+        
+        authors.map{|author| UserModel.new(author)}
+        
     end
 
     def replies
@@ -191,15 +195,15 @@ class RepliesModel
         @body = options['body'] 
     end
 
-    def author
-        authors = QuestionsDBConnection.instance.execute(<<-SQL, self.user_id)
-            SELECT fname, lname FROM user
-            WHERE id = ?
-        SQL
+    # def author
+    #     authors = QuestionsDBConnection.instance.execute(<<-SQL, self.user_id)
+    #         SELECT fname, lname FROM user
+    #         WHERE id = ?
+    #     SQL
 
-        return nil if authors.length < 0
-        UserModel.new(authors.first)
-    end
+    #     return nil if authors.length < 0
+    #     UserModel.new(authors.first)
+    # end
 
 
 
